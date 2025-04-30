@@ -8223,19 +8223,19 @@ AtlasLoot_Data["AtlasLootItems"] = {
 			{ { 47112, "=ds=#s12#, #a1#" }, { 47118, "=ds=#s12#, #a1#" }, }, -- mage
 		},
 		},
-		{ 0, "", "", "" },
-		{ 55482, "INV_Jewelry_Necklace_29", "=q4=Ephemeral Pendant", "=ds=T3.5 Neck", "4%", "", "", "", "", "", "", "", "", "", "", {
-			{ { 47275, "=ds=#s3#, #a4#" }, }, -- war
-			{ { 47233, "=ds=#s3#, #a1#" }, { 47239, "=ds=#s3#, #a1#" }, }, -- priest
-			{ { 47311, "=ds=#s3#, #a1#" }, { 47317, "=ds=#s3#, #a1#" }, }, -- lock
-			{ { 47395, "=ds=#s3#, #a2#" }, { 47401, "=ds=#s3#, #a2#" }, { 47407, "=ds=#s3#, #a2#" } }, -- druid
-			{ { 47065, "=ds=#s12#, #a4#" }, { 47071, "=ds=#s12#, #a4#" }, { 47077, "=ds=#s12#, #a4#" }, }, -- paladin
-			{ { 47323, "=ds=#s12#, #a3#" }, }, -- hunter
-			{ { 47329, "=ds=#s12#, #a2#" }, }, -- rogue
-			{ { 47185, "=ds=#s12#, #a3#" }, { 47191, "=ds=#s12#, #a3#" }, { 47197, "=ds=#s12#, #a3#" } }, -- shaman
-			{ { 47113, "=ds=#s12#, #a1#" }, { 47119, "=ds=#s12#, #a1#" }, }, -- mage
-		},
-		},
+		-- { 0, "", "", "" },
+		-- { 55482, "INV_Jewelry_Necklace_29", "=q4=Ephemeral Pendant", "=ds=T3.5 Neck", "4%", "", "", "", "", "", "", "", "", "", "", {
+		-- 	{ { 47275, "=ds=#s3#, #a4#" }, }, -- war
+		-- 	{ { 47233, "=ds=#s3#, #a1#" }, { 47239, "=ds=#s3#, #a1#" }, }, -- priest
+		-- 	{ { 47311, "=ds=#s3#, #a1#" }, { 47317, "=ds=#s3#, #a1#" }, }, -- lock
+		-- 	{ { 47395, "=ds=#s3#, #a2#" }, { 47401, "=ds=#s3#, #a2#" }, { 47407, "=ds=#s3#, #a2#" } }, -- druid
+		-- 	{ { 47065, "=ds=#s12#, #a4#" }, { 47071, "=ds=#s12#, #a4#" }, { 47077, "=ds=#s12#, #a4#" }, }, -- paladin
+		-- 	{ { 47323, "=ds=#s12#, #a3#" }, }, -- hunter
+		-- 	{ { 47329, "=ds=#s12#, #a2#" }, }, -- rogue
+		-- 	{ { 47185, "=ds=#s12#, #a3#" }, { 47191, "=ds=#s12#, #a3#" }, { 47197, "=ds=#s12#, #a3#" } }, -- shaman
+		-- 	{ { 47113, "=ds=#s12#, #a1#" }, { 47119, "=ds=#s12#, #a1#" }, }, -- mage
+		-- },
+		-- },
 	};
 	UKHSanvTasdal = {
 		{ 55113, "INV_DemonhornHelmet", "=q4=Dreadslayer Horns", "=ds=#s1#, #a4#", "14.3%" },
@@ -8373,23 +8373,24 @@ AtlasLoot_Data["AtlasLootItems"] = {
 		},
 	};
 	UKHMephistroth = {
-		{ 0, "INV_Misc_QuestionMark", "=q4=Turalyon's Hope", "=ds=#s10#, #a4#" },
+		{ 55351, "INV_Belt_22", "=q4=Turalyon's Hope", "=ds=#s10#, #a4#" },
 		{ 55353, "INV_Jewelry_Ring_Nightbreaker", "=q4=Mephistroth's Cunning", "=ds=#s13#" },
 		{ 55356, "INV_Bracer_18", "=q4=Netherwrought Bracers", "=ds=#s8#, #a4#" },
-		{ 0, "INV_Misc_QuestionMark", "=q4=Tunic of Demonic Deception", "=ds=#s5#, #a2#", },
-		{ 0, "INV_Misc_QuestionMark", "=q4=Sash of the Grand Betrayal", "=ds=#s10#, #a2#", },
-		{ 0, "INV_Misc_QuestionMark", "=q4=Rain of Spiders", "=ds=#w2#" },
-		{ 0, "INV_Misc_QuestionMark", "=q4=Thunderfall, Stormhammer of the Chief Thane", "=ds=#h1#, #w6#" },
+		{ 55513, "INV_Chest_Chain_07", "=q4=Tunic of Demonic Deception", "=ds=#s5#, #a2#", },
+		{ 55357, "INV_Belt_26", "=q4=Sash of the Grand Betrayal", "=ds=#s10#, #a2#", },
+		{ 55346, "INV_Weapon_BoneBow2", "=q4=Rain of Spiders", "=ds=#w2#" },
+		{ 55347, "INV_Thunderfall", "=q4=Thunderfall, Stormhammer of the Chief Thane", "=ds=#h1#, #w6#" },
 		{ 0, "", "", "" },
-		{ 0, "INV_Misc_QuestionMark", "=q4=Kirel'narak, the Death Sentence (maybe)", "=ds=#w9#", "" },
-		{ 0, "INV_Misc_QuestionMark", "=q4=Nethraka (maybe)", "=ds=#w8#", "" },
-		{ 0, "INV_Misc_QuestionMark", "=q4=Censer of Soulwarding (maybe)", "=ds=#s15#" },
-		{ 0, "INV_Misc_QuestionMark", "=q4=Cloak of Rapid Regeneration (maybe)", "=ds=?#s4#?" },
-		{ 0, "INV_Misc_QuestionMark", "=q4=Khadgar's Guidance (maybe)", "=ds=???" },
-		{ 0, "INV_Misc_QuestionMark", "=q4=Memory of the Last Guardian (maybe)", "=ds=???" },
-		{ 0, "INV_Misc_QuestionMark", "=q4=Netherclaw Gauntlets (maybe)", "=ds=?#s9#?" },
-		{ 0, "INV_Misc_QuestionMark", "=q4=Felforged Dreadhound", "=ds=#e7#", "100%" },
-		{ 41485, "INV_Misc_Gem_Diamond_01", "=q3=Pristine Lay Crytstal", "=ds=", "3.25%" },
+		{ 55348, "INV_Kirel", "=q4=Kirel'narak, the Death Sentence", "=ds=#w9#", "" },
+		{ 55512, "inv_shoulder_01", "=q4=Forgotten Hide Pauldrons", "=ds=#s3#, #a2#", "" },
+		{ 55349, "INV_Nethraka", "=q4=Nethraka, Wing of Oblivion", "=ds=#w8#", "" },
+		{ 55350, "Inv_Censer", "=q4=Censer of Soulwarding", "=ds=#s15#" },
+		{ 55352, "INV_Misc_Cape_20", "=q4=Cloak of Rapid Regeneration", "=ds=#s4#" },
+		{ 55354, "INV_Gauntlets_05", "=q4=Khadgar's Guidance", "=ds=#s9#, #a1#" },
+		{ 55355, "INV_Belt_03", "=q4=Memory of the Last Guardian", "=ds=#s10#, #a1#" },
+		{ 0, "INV_Misc_QuestionMark", "=q4=Netherclaw Gauntlets", "=ds=?#s9#?" },
+		{ 92082, "Spell_Shadow_SummonFelHunter", "=q4=Felforged Dreadhound", "=ds=#e7#", "5%" },
+		{ 41485, "INV_Misc_Gem_Diamond_01", "=q3=Pristine Lay Crytstal", "=ds=", "" },
 		{ 0, "", "", "" },
 		{ 55579, "BTNHeartAmulet", "=q4=Heart of Mephistroth", "=ds=#m3#", "100%" },
 		{ 55515, "INV_Misc_Cape_17", "=q4=Felforged Nathrezan Veil", "=q1=#m4# =ds=#s4#" },
@@ -8424,6 +8425,8 @@ AtlasLoot_Data["AtlasLootItems"] = {
 			{ { 47113, "=ds=#s12#, #a1#" }, { 47119, "=ds=#s12#, #a1#" }, }, -- mage
 		},
 		},
+		{ 0, "", "", "" },
+		{ 41447, "INV_Misc_Gem_Pearl_06", "=q5=Soul of the Dreadlord", "=ds=#m3#" },
 	};
 	UKHTrash = {
 		{ 0, "INV_Misc_QuestionMark", "=q4=Slivers of Nullification", "=ds=?#s14#?", "0.1%" },
@@ -8433,7 +8436,7 @@ AtlasLoot_Data["AtlasLootItems"] = {
 		{ 55281, "INV_Gauntlets_05", "=q4=Gauntlets of Elemental Fury", "=ds=#s9#, #a3#", "0.1%" },
 		{ 55282, "INV_lionheart_sabatons", "=q4=Boots of the Grand Crusader", "=ds=#s12#, #a4#", "0.1%" },
 		{ 55283, "INV_Gauntlets_05", "=q4=Gauntlets of the Grand Crusader", "=ds=#s9#, #a4#", "0.1%" },
-		{ 55284, "INV_Belt_08", "=q4=Dragunovi's Sash of Dominion", "=ds=#s10#, #a4#", "0.1%" },
+		{ 55284, "INV_Belt_08", "=q4=Dragunovi's Sash of Dominion", "=ds=#s10#, #a1#", "0.1%" },
 		{ 55286, "INV_Jewelry_Ring_33", "=q4=Ring of Holy Light", "=ds=#s10#, #a4#", "0.1%" },
 		{ 55508, "INV_Jewelry_Necklace_27", "=q4=Brand of Karazhan", "=ds=#s10#, #a4#", "0.1%" },
 		{ 0, "INV_Misc_QuestionMark", "=q4=Unknown Items", "", "0.1%" },
