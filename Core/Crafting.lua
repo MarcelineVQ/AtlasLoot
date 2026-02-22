@@ -66,7 +66,7 @@ function AtlasLoot_CraftingMenu()
 	AtlasLootMenuItem_11_Name:SetText(AL["Cooking"]);
 	AtlasLootMenuItem_11_Extra:SetText("");
 	AtlasLootMenuItem_11_Icon:SetTexture("Interface\\Icons\\INV_Misc_Food_15");
-	AtlasLootMenuItem_11.lootpage="COOKINGMENU";
+	AtlasLootMenuItem_11.lootpage="CookingApprentice1";
 	AtlasLootMenuItem_11:Show();
 	--First Aid
 	AtlasLootMenuItem_12_Name:SetText(AL["First Aid"]);
@@ -312,7 +312,7 @@ function AtlasLoot_AlchemyMenu()
 	AtlasLootMenuItem_8.lootpage="AlchemyProtectionPots1";
 	AtlasLootMenuItem_8:Show();
 	--Healing and Mana
-	AtlasLootMenuItem_9_Name:SetText(AL["Healing and Mana Potions"]);
+	AtlasLootMenuItem_9_Name:SetText(AL["Health and Mana Potions"]);
 	AtlasLootMenuItem_9_Extra:SetText("");
 	AtlasLootMenuItem_9_Icon:SetTexture("Interface\\Icons\\Trade_Alchemy");
 	AtlasLootMenuItem_9.lootpage="AlchemyHealingAndMana1";
@@ -336,10 +336,10 @@ function AtlasLoot_AlchemyMenu()
 	AtlasLootMenuItem_12.lootpage="AlchemyOffensive1";
 	AtlasLootMenuItem_12:Show();
 	--Other
-	AtlasLootMenuItem_13_Name:SetText(AL["Other"]);
+	AtlasLootMenuItem_13_Name:SetText(AL["Miscellaneous"]);
 	AtlasLootMenuItem_13_Extra:SetText("");
 	AtlasLootMenuItem_13_Icon:SetTexture("Interface\\Icons\\Trade_Alchemy");
-	AtlasLootMenuItem_13.lootpage="AlchemyOther1";
+	AtlasLootMenuItem_13.lootpage="AlchemyMisc1";
 	AtlasLootMenuItem_13:Show();
 end
 
@@ -862,34 +862,6 @@ function AtlasLoot_TailoringMenu()
 	AtlasLootMenuItem_19:Show();
 end
 
-function AtlasLoot_CookingMenu()
-	AtlasLoot_PrepMenu("CRAFTINGMENU", AL["Cooking"])
-	--Apprentice
-	AtlasLootMenuItem_2_Name:SetText(AL["Cooking"]..": "..AL["Apprentice"]);
-	AtlasLootMenuItem_2_Extra:SetText("");
-	AtlasLootMenuItem_2_Icon:SetTexture("Interface\\Icons\\INV_Misc_Food_15");
-	AtlasLootMenuItem_2.lootpage = "CookingApprentice1";
-	AtlasLootMenuItem_2:Show();
-	--Journeyman
-	AtlasLootMenuItem_3_Name:SetText(AL["Cooking"]..": "..AL["Journeyman"]);
-	AtlasLootMenuItem_3_Extra:SetText("");
-	AtlasLootMenuItem_3_Icon:SetTexture("Interface\\Icons\\INV_Misc_Food_15");
-	AtlasLootMenuItem_3.lootpage = "CookingJourneyman1";
-	AtlasLootMenuItem_3:Show();
-	--Expert
-	AtlasLootMenuItem_4_Name:SetText(AL["Cooking"]..": "..AL["Expert"]);
-	AtlasLootMenuItem_4_Extra:SetText("");
-	AtlasLootMenuItem_4_Icon:SetTexture("Interface\\Icons\\INV_Misc_Food_15");
-	AtlasLootMenuItem_4.lootpage="CookingExpert1";
-	AtlasLootMenuItem_4:Show();
-	--Artisan
-	AtlasLootMenuItem_5_Name:SetText(AL["Cooking"]..": "..AL["Artisan"]);
-	AtlasLootMenuItem_5_Extra:SetText("");
-	AtlasLootMenuItem_5_Icon:SetTexture("Interface\\Icons\\INV_Misc_Food_15");
-	AtlasLootMenuItem_5.lootpage="CookingArtisan1";
-	AtlasLootMenuItem_5:Show();
-end
-
 function AtlasLoot_JewelcraftingMenu()
 	AtlasLoot_PrepMenu("CRAFTINGMENU", AL["Jewelcrafting"])
 	--Apprentice
@@ -947,7 +919,7 @@ function AtlasLoot_JewelcraftingMenu()
 	AtlasLootMenuItem_11.lootpage="JewelcraftingBracers1";
 	AtlasLootMenuItem_11:Show();
 	--Offhands
-	AtlasLootMenuItem_12_Name:SetText(AL["Jewelcrafting"]..": "..AL["Off-hand"]);
+	AtlasLootMenuItem_12_Name:SetText(AL["Jewelcrafting"]..": "..AL["Off Hand"]);
 	AtlasLootMenuItem_12_Extra:SetText("");
 	AtlasLootMenuItem_12_Icon:SetTexture("Interface\\Icons\\INV_Jewelry_Necklace_01");
 	AtlasLootMenuItem_12.lootpage="JewelcraftingOffHands1";

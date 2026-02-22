@@ -19,7 +19,12 @@ AtlasLoot_ShowWishList()
 Displays the WishList
 ]]
 function AtlasLoot_ShowWishList()
-	AtlasLoot_ShowItemsFrame("WishList", "WishListPage"..currentPage, AL["WishList"], pFrame);
+	AtlasLoot_ShowItemsFrame("WishList", "WishListPage"..currentPage, AL["WishList"]);
+    CloseDropDownMenus();
+    AtlasLootDefaultFrame_SubMenu:Disable()
+    AtlasLootDefaultFrame_SelectedTable:Hide()
+    AtlasLootQuickLooksButton:Hide()
+    AtlasLoot_QuickLooks:Hide()
 end
 
 --[[
@@ -53,7 +58,7 @@ function AtlasLoot_DeleteFromWishList(itemID)
 	end
 	AtlasLoot_WishList = AtlasLoot_CategorizeWishList(AtlasLootCharDB["WishList"]);
 	AtlasLootItemsFrame:Hide();
-	AtlasLoot_ShowItemsFrame("WishList", "WishListPage"..currentPage, AL["WishList"], pFrame);
+	AtlasLoot_ShowItemsFrame("WishList", "WishListPage"..currentPage, AL["WishList"]);
 end
 
 --[[
@@ -196,6 +201,7 @@ function AtlasLoot_GetWishListSubheadingBoss(dataID)
 end
 
 function GetLootTableParent(dataID)
+    if not dataID then return end
 	local parentID ;
 	for i, v in pairs(AtlasLoot_TableNamesBoss) do
 		for j,k in pairs(v) do
@@ -206,6 +212,21 @@ function GetLootTableParent(dataID)
 		end
 	end
 	return parentID;
+end
+
+local function GetWishListSubheadingDungeon(dataID)
+	if not AtlasLoot_TableNames then return end
+	local zoneID ;
+	for i, v in pairs(AtlasLoot_TableNamesBoss) do
+		for j,k in pairs(v) do
+			if dataID == j then
+				zoneID = i
+				break;
+			end
+		end
+	end
+
+	return zoneID;
 end
 
 --[[
@@ -219,10 +240,14 @@ function AtlasLoot_CategorizeWishList(wlTable)
 
 	for _, v in pairs(wlTable) do
 		if v[5] and v[5] ~= "" then
-			local dataID = AtlasLoot_Strsplit("|", v[5]);
+			local _, _, dataID = strfind(v[5], "^(.+)|.+");
 			-- Build subheading table
 			if not subheadings[dataID] then
-				subheadings[dataID] = AtlasLoot_GetWishListSubheadingBoss(dataID);
+				if AtlasLootCharDB.WishlistGroupedByDungeon then
+					subheadings[dataID] = GetWishListSubheadingDungeon(dataID);
+				else
+					subheadings[dataID] = AtlasLoot_GetWishListSubheadingBoss(dataID);
+				end
 				-- If search failed, replace ID like "Aldor2" to "Aldor1" and try again
 				if not subheadings[dataID] and string.find(dataID, "^%a+%d?$") then
 					subheadings[dataID] = AtlasLoot_GetWishListSubheading(string.sub(dataID, 1, string.len(dataID) - 1).."1");
@@ -247,7 +272,8 @@ function AtlasLoot_CategorizeWishList(wlTable)
 		-- some debug code that I've used to fix WishList errors before due to people adding drops to AtlasLoot incorrectly.
 		local box = k or "Unknown"
 		local cat = categories[k][1][5] or "Unknown"
-		local parent = GetLootTableParent(AtlasLoot_Strsplit("|", cat)) or "Unknown"
+        _, _, cat = strfind(cat, "^(.+)|.+")
+		local parent = GetLootTableParent(cat) or "Unknown"
 		--print("box: "..box.." - cat: "..cat)
 		table.insert(result, { 0, "INV_Box_01", "=q6="..box, "=q0="..parent });
 		

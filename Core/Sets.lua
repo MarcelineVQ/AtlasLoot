@@ -1,4 +1,5 @@
 local AL = AceLibrary("AceLocale-2.2"):new("AtlasLoot");
+local _G = _G or getfenv(0)
 
 local ORANGE = "|cffFF8400";
 local data = AtlasLoot_Data["AtlasLootSetItems"]
@@ -21,17 +22,16 @@ end
 
 function AtlasLoot_PrepMenu(backPage, title)
 	for i = 1, 30, 1 do
-		getglobal("AtlasLootItem_" .. i):Hide();
-		getglobal("AtlasLootItem_" .. i.."Border"):Hide()
+		_G["AtlasLootItem_" .. i]:Hide();
 	end
 	for i = 1, 30, 1 do
-		local button = getglobal("AtlasLootMenuItem_" .. i)
-		getglobal("AtlasLootMenuItem_" .. i.."Border"):Hide()
+		local button = _G["AtlasLootMenuItem_" .. i]
 		button:Hide();
 		button.isheader = false;
 		button.container = nil
 		button.dataSource = nil
-		getglobal("AtlasLootMenuItem_" .. i .. "_Icon"):SetTexCoord(0, 1, 0, 1)
+		_G["AtlasLootMenuItem_" .. i .. "_Icon"]:SetTexCoord(0, 1, 0, 1)
+		_G["AtlasLootMenuItem_"..i.."_IconBorder"]:SetVertexColor(1, 1, 1)
 	end
 	if backPage then
 		AtlasLootItemsFrame_BACK:Show();
@@ -43,16 +43,16 @@ function AtlasLoot_PrepMenu(backPage, title)
 	AtlasLootItemsFrame_PREV:Hide();
 	AtlasLootServerQueryButton:Hide();
 	for i = 1, 30, 1 do
-		getglobal("AtlasLootMenuItem_" .. i .. "_Extra"):Show();
+		_G["AtlasLootMenuItem_" .. i .. "_Extra"]:Show();
 	end
 	AtlasLoot_BossName:SetText("|cffFFFFFF" .. title);
-	AtlasLoot_SetItemInfoFrame(AtlasLoot_AnchorFrame);
+	-- AtlasLoot_SetItemInfoFrame(AtlasLoot_AnchorPoint);
 end
 
 function AtlasLootSetMenu()
 	AtlasLoot_PrepMenu(nil, AL["Collections"])
 	AtlasLootCharDB.LastBoss = "SETMENU"
-	AtlasLootCharDB.LastBossText = "Collections"
+	AtlasLootCharDB.LastBossText = AL["Collections"]
 	--ZG
 	AtlasLootMenuItem_3_Name:SetText(AL["Zul'Gurub Sets"]);
 	AtlasLootMenuItem_3_Extra:SetText("");
@@ -95,12 +95,6 @@ function AtlasLootSetMenu()
 	AtlasLootMenuItem_10_Icon:SetTexture("Interface\\Icons\\INV_Misc_QirajiCrystal_05");
 	AtlasLootMenuItem_10.lootpage = "RareMounts";
 	AtlasLootMenuItem_10:Show();
-	-- Fashion
-	AtlasLootMenuItem_24_Name:SetText(AL["Fashion"]);
-	AtlasLootMenuItem_24_Extra:SetText("");
-	AtlasLootMenuItem_24_Icon:SetTexture("Interface\\Icons\\Ability_Hunter_Pet_Turtle");
-	AtlasLootMenuItem_24.lootpage = "DonationRewards2";
-	AtlasLootMenuItem_24:Show();
 	--Sets
 	AtlasLootMenuItem_2_Name:SetText(AL["Sets"]);
 	AtlasLootMenuItem_2_Extra:SetText("");
@@ -108,17 +102,17 @@ function AtlasLootSetMenu()
 	AtlasLootMenuItem_2.lootpage = "PRE60SET";
 	AtlasLootMenuItem_2:Show();
 	--World Epics
-	AtlasLootMenuItem_22_Name:SetText(AL["World Epics"]);
-	AtlasLootMenuItem_22_Extra:SetText("");
-	AtlasLootMenuItem_22_Icon:SetTexture("Interface\\Icons\\INV_Gauntlets_30");
-	AtlasLootMenuItem_22.lootpage = "WORLDEPICS";
-	AtlasLootMenuItem_22:Show();
+	AtlasLootMenuItem_23_Name:SetText(AL["World Epics"]);
+	AtlasLootMenuItem_23_Extra:SetText("");
+	AtlasLootMenuItem_23_Icon:SetTexture("Interface\\Icons\\INV_Gauntlets_30");
+	AtlasLootMenuItem_23.lootpage = "WorldEpics1";
+	AtlasLootMenuItem_23:Show();
 	--Tabards
-	AtlasLootMenuItem_25_Name:SetText(AL["Tabards"]);
-	AtlasLootMenuItem_25_Extra:SetText("");
-	AtlasLootMenuItem_25_Icon:SetTexture("Interface\\Icons\\INV_Shirt_GuildTabard_01");
-	AtlasLootMenuItem_25.lootpage = "Tabards";
-	AtlasLootMenuItem_25:Show();
+	AtlasLootMenuItem_24_Name:SetText(AL["Tabards"]);
+	AtlasLootMenuItem_24_Extra:SetText("");
+	AtlasLootMenuItem_24_Icon:SetTexture("Interface\\Icons\\INV_Shirt_GuildTabard_01");
+	AtlasLootMenuItem_24.lootpage = "Tabards";
+	AtlasLootMenuItem_24:Show();
 	--Dungeon Set 1/2
 	AtlasLootMenuItem_17_Name:SetText(AL["Dungeon 1/2 Sets"]);
 	AtlasLootMenuItem_17_Extra:SetText("");
@@ -144,8 +138,10 @@ function AtlasLootSetMenu()
 	AtlasLootMenuItem_20.lootpage = "T3SET";
 	AtlasLootMenuItem_20:Show();
 	for i = 1, 30 do
-		if getglobal("AtlasLootMenuItem_"..i).container then
-			getglobal("AtlasLootMenuItem_"..i.."Border"):Show()
+		if _G["AtlasLootMenuItem_"..i].container then
+			_G["AtlasLootMenuItem_"..i.."_IconBorder"]:SetVertexColor(1, 0.82, 0)
+		else
+			_G["AtlasLootMenuItem_"..i.."_IconBorder"]:SetVertexColor(1, 1, 1)
 		end
 	end
 end
@@ -280,10 +276,15 @@ function AtlasLootPRE60SetMenu()
 	AtlasLootMenuItem_23.container = data.SpiritofEskhandarC
 	AtlasLootMenuItem_23:Show();
 	for i = 1, 30 do
-		local button = getglobal("AtlasLootMenuItem_" .. i)
+		local button = _G["AtlasLootMenuItem_" .. i]
 		button.dataSource = AtlasLoot_GetDataSource(button.lootpage)
-		if button.container then
-			getglobal("AtlasLootMenuItem_"..i.."Border"):Show()
+		if ( type(button.container) == "table" ) then
+			_G["AtlasLootMenuItem_"..i.."_IconBorder"]:SetVertexColor(1, 0.82, 0)
+			for row = 1, getn(button.container) do
+				for item = 1, getn(button.container[row]) do
+					AtlasLoot_CacheItem(button.container[row][item][1])
+				end
+			end
 		end
 	end
 end
@@ -375,10 +376,15 @@ function AtlasLootZGSetMenu()
 	AtlasLootMenuItem_25.container = data.HakkariBladesC
 	AtlasLootMenuItem_25:Show();
 	for i = 1, 30 do
-		local button = getglobal("AtlasLootMenuItem_" .. i)
+		local button = _G["AtlasLootMenuItem_" .. i]
 		button.dataSource = AtlasLoot_GetDataSource(button.lootpage)
-		if button.container then
-			getglobal("AtlasLootMenuItem_"..i.."Border"):Show()
+		if ( type(button.container) == "table" ) then
+			_G["AtlasLootMenuItem_"..i.."_IconBorder"]:SetVertexColor(1, 0.82, 0)
+			for row = 1, getn(button.container) do
+				for item = 1, getn(button.container[row]) do
+					AtlasLoot_CacheItem(button.container[row][item][1])
+				end
+			end
 		end
 	end
 end
@@ -449,10 +455,15 @@ function AtlasLootAQ40SetMenu()
 	AtlasLootMenuItem_21.container = data.AQ40WarriorC
 	AtlasLootMenuItem_21:Show();
 	for i = 1, 30 do
-		local button = getglobal("AtlasLootMenuItem_" .. i)
+		local button = _G["AtlasLootMenuItem_" .. i]
 		button.dataSource = AtlasLoot_GetDataSource(button.lootpage)
-		if button.container then
-			getglobal("AtlasLootMenuItem_"..i.."Border"):Show()
+		if ( type(button.container) == "table" ) then
+			_G["AtlasLootMenuItem_"..i.."_IconBorder"]:SetVertexColor(1, 0.82, 0)
+			for row = 1, getn(button.container) do
+				for item = 1, getn(button.container[row]) do
+					AtlasLoot_CacheItem(button.container[row][item][1])
+				end
+			end
 		end
 	end
 end
@@ -523,10 +534,15 @@ function AtlasLootAQ20SetMenu()
 	AtlasLootMenuItem_21.container = data.AQ20WarriorC
 	AtlasLootMenuItem_21:Show();
 	for i = 1, 30 do
-		local button = getglobal("AtlasLootMenuItem_" .. i)
+		local button = _G["AtlasLootMenuItem_" .. i]
 		button.dataSource = AtlasLoot_GetDataSource(button.lootpage)
-		if button.container then
-			getglobal("AtlasLootMenuItem_"..i.."Border"):Show()
+		if ( type(button.container) == "table" ) then
+			_G["AtlasLootMenuItem_"..i.."_IconBorder"]:SetVertexColor(1, 0.82, 0)
+			for row = 1, getn(button.container) do
+				for item = 1, getn(button.container[row]) do
+					AtlasLoot_CacheItem(button.container[row][item][1])
+				end
+			end
 		end
 	end
 end
@@ -597,10 +613,15 @@ function AtlasLootT0SetMenu()
 	AtlasLootMenuItem_21.container = data.T0WarriorC
 	AtlasLootMenuItem_21:Show();
 	for i = 1, 30 do
-		local button = getglobal("AtlasLootMenuItem_" .. i)
+		local button = _G["AtlasLootMenuItem_" .. i]
 		button.dataSource = AtlasLoot_GetDataSource(button.lootpage)
-		if button.container then
-			getglobal("AtlasLootMenuItem_"..i.."Border"):Show()
+		if ( type(button.container) == "table" ) then
+			_G["AtlasLootMenuItem_"..i.."_IconBorder"]:SetVertexColor(1, 0.82, 0)
+			for row = 1, getn(button.container) do
+				for item = 1, getn(button.container[row]) do
+					AtlasLoot_CacheItem(button.container[row][item][1])
+				end
+			end
 		end
 	end
 end
@@ -671,10 +692,15 @@ function AtlasLootT1SetMenu()
 	AtlasLootMenuItem_21.container = data.T1WarriorC
 	AtlasLootMenuItem_21:Show();
 	for i = 1, 30 do
-		local button = getglobal("AtlasLootMenuItem_" .. i)
+		local button = _G["AtlasLootMenuItem_" .. i]
 		button.dataSource = AtlasLoot_GetDataSource(button.lootpage)
-		if button.container then
-			getglobal("AtlasLootMenuItem_"..i.."Border"):Show()
+		if ( type(button.container) == "table" ) then
+			_G["AtlasLootMenuItem_"..i.."_IconBorder"]:SetVertexColor(1, 0.82, 0)
+			for row = 1, getn(button.container) do
+				for item = 1, getn(button.container[row]) do
+					AtlasLoot_CacheItem(button.container[row][item][1])
+				end
+			end
 		end
 	end
 end
@@ -745,10 +771,15 @@ function AtlasLootT2SetMenu()
 	AtlasLootMenuItem_21.container = data.T2WarriorC
 	AtlasLootMenuItem_21:Show();
 	for i = 1, 30 do
-		local button = getglobal("AtlasLootMenuItem_" .. i)
+		local button = _G["AtlasLootMenuItem_" .. i]
 		button.dataSource = AtlasLoot_GetDataSource(button.lootpage)
-		if button.container then
-			getglobal("AtlasLootMenuItem_"..i.."Border"):Show()
+		if ( type(button.container) == "table" ) then
+			_G["AtlasLootMenuItem_"..i.."_IconBorder"]:SetVertexColor(1, 0.82, 0)
+			for row = 1, getn(button.container) do
+				for item = 1, getn(button.container[row]) do
+					AtlasLoot_CacheItem(button.container[row][item][1])
+				end
+			end
 		end
 	end
 end
@@ -819,10 +850,15 @@ function AtlasLootT3SetMenu()
 	AtlasLootMenuItem_21.container = data.T3WarriorC
 	AtlasLootMenuItem_21:Show();
 	for i = 1, 30 do
-		local button = getglobal("AtlasLootMenuItem_" .. i)
+		local button = _G["AtlasLootMenuItem_" .. i]
 		button.dataSource = AtlasLoot_GetDataSource(button.lootpage)
-		if button.container then
-			getglobal("AtlasLootMenuItem_"..i.."Border"):Show()
+		if ( type(button.container) == "table" ) then
+			_G["AtlasLootMenuItem_"..i.."_IconBorder"]:SetVertexColor(1, 0.82, 0)
+			for row = 1, getn(button.container) do
+				for item = 1, getn(button.container[row]) do
+					AtlasLoot_CacheItem(button.container[row][item][1])
+				end
+			end
 		end
 	end
 end
@@ -893,10 +929,15 @@ function AtlasLoot_Kara40SetMenu()
 	AtlasLootMenuItem_21.container = data.T35WarriorC
 	AtlasLootMenuItem_21:Show();
 	for i = 1, 30 do
-		local button = getglobal("AtlasLootMenuItem_" .. i)
+		local button = _G["AtlasLootMenuItem_" .. i]
 		button.dataSource = AtlasLoot_GetDataSource(button.lootpage)
-		if button.container then
-			getglobal("AtlasLootMenuItem_"..i.."Border"):Show()
+		if ( type(button.container) == "table" ) then
+			_G["AtlasLootMenuItem_"..i.."_IconBorder"]:SetVertexColor(1, 0.82, 0)
+			for row = 1, getn(button.container) do
+				for item = 1, getn(button.container[row]) do
+					AtlasLoot_CacheItem(button.container[row][item][1])
+				end
+			end
 		end
 	end
 end

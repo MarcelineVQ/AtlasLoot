@@ -1,502 +1,336 @@
 -- extra info on GameTooltip and ItemRefTooltip
 local AtlasLootTip = CreateFrame("Frame", "AtlasLootTip", GameTooltip)
-
+local strfind = string.find
+local GetItemInfo = GetItemInfo
 local GREY = "|cff999999"
+local _G = _G or getfenv(0)
 
-local lastSearchName = nil
-local lastSearchID = nil
-local function GetItemIDByName(name)
-	if name ~= lastSearchName then
-    	for itemID = 1, 99999 do
-      		local itemName = GetItemInfo(itemID)
-      		if (itemName and itemName == name) then
-        		lastSearchID = itemID
-				break
-     		end
-    	end
-		lastSearchName = name
-  	end
-	return lastSearchID
-end
-
-local HookSetItemRef = SetItemRef
-SetItemRef = function(link, text, button)
-    local item, _, id = string.find(link, "item:(%d+)")
-	ItemRefTooltip.itemID = id
-    HookSetItemRef(link, text, button)
-    if not IsShiftKeyDown() and not IsControlKeyDown() and item then
-        AtlasLootTip.extendTooltip(ItemRefTooltip)
-    end
-end
-
-local HookSetHyperlink = GameTooltip.SetHyperlink
-function GameTooltip.SetHyperlink(self, arg1)
-  if arg1 then
-    local _, _, linktype = string.find(arg1, "^(.-):(.+)$")
-    if linktype == "item" then
-        local _, _, id = string.find(arg1,"item:(%d+)")
-  		GameTooltip.itemID = id
-    end
-  end
-  return HookSetHyperlink(self, arg1)
-end
-
-local HookSetBagItem = GameTooltip.SetBagItem
-function GameTooltip.SetBagItem(self, container, slot)
-	if GetContainerItemLink(container, slot) then
-		local _, _, id = string.find(GetContainerItemLink(container, slot),"item:(%d+)")
-		GameTooltip.itemID = id
-	end
-  return HookSetBagItem(self, container, slot)
-end
-
-local HookSetInboxItem = GameTooltip.SetInboxItem
-function GameTooltip.SetInboxItem(self, mailID, attachmentIndex)
-	local itemName = GetInboxItem(mailID)
-	if itemName then
-		GameTooltip.itemID = GetItemIDByName(itemName)
-	end
-	return HookSetInboxItem(self, mailID, attachmentIndex)
-end
-
-local HookSetInventoryItem = GameTooltip.SetInventoryItem
-function GameTooltip.SetInventoryItem(self, unit, slot)
-	if GetInventoryItemLink(unit, slot) then
-		local _, _, id = string.find(GetInventoryItemLink(unit, slot),"item:(%d+)")
-		GameTooltip.itemID = id
-	end
-	return HookSetInventoryItem(self, unit, slot)
-end
-
-local HookSetCraftItem = GameTooltip.SetCraftItem
-function GameTooltip.SetCraftItem(self, skill, slot)
-	if GetCraftReagentItemLink(skill, slot) then
-		local _, _, id = string.find(GetCraftReagentItemLink(skill, slot),"item:(%d+)")
-		GameTooltip.itemID = id
-	end
-	return HookSetCraftItem(self, skill, slot)
-end
-
-local HookSetTradeSkillItem = GameTooltip.SetTradeSkillItem
-function GameTooltip.SetTradeSkillItem(self, skillIndex, reagentIndex)
-	if reagentIndex then
-		if GetTradeSkillReagentItemLink(skillIndex, reagentIndex) then
-			local _, _, id = string.find(GetTradeSkillReagentItemLink(skillIndex, reagentIndex),"item:(%d+)")
-			GameTooltip.itemID = id
-		end
+local insideHook = false
+local tooltipMoney = 0
+local original_SetTooltipMoney = SetTooltipMoney
+function SetTooltipMoney(frame, money)
+	if insideHook then
+		tooltipMoney = money or 0
 	else
-		if GetTradeSkillItemLink(skillIndex) then
-			local _, _, id = string.find(GetTradeSkillItemLink(skillIndex),"item:(%d+)")
-			GameTooltip.itemID = id
-		end
+		original_SetTooltipMoney(frame, money)
 	end
-	return HookSetTradeSkillItem(self, skillIndex, reagentIndex)
 end
 
-local HookSetAuctionItem = GameTooltip.SetAuctionItem
-function GameTooltip.SetAuctionItem(self, atype, index)
-	local itemName = GetAuctionItemInfo(atype, index)
-	if itemName then
-		GameTooltip.itemID = GetItemIDByName(itemName)
-	end
-	return HookSetAuctionItem(self, atype, index)
-end
-
-local HookSetAuctionSellItem = GameTooltip.SetAuctionSellItem
-function GameTooltip.SetAuctionSellItem(self)
-	local itemName = GetAuctionSellItemInfo()
-	if itemName then
-		GameTooltip.itemID = GetItemIDByName(itemName)
-	end
-	return HookSetAuctionSellItem(self)
-end
-
-local HookSetTradePlayerItem = GameTooltip.SetTradePlayerItem
-function GameTooltip.SetTradePlayerItem(self, index)
-	if GetTradePlayerItemLink(index) then
-		local _, _, id = string.find(GetTradePlayerItemLink(index),"item:(%d+)")
-		GameTooltip.itemID = id
-	end
-	return HookSetTradePlayerItem(self, index)
-end
-
-local HookSetTradeTargetItem = GameTooltip.SetTradeTargetItem
-function GameTooltip.SetTradeTargetItem(self, index)
-	if GetTradeTargetItemLink(index) then
-		local _, _, id = string.find(GetTradeTargetItemLink(index),"item:(%d+)")
-		GameTooltip.itemID = id
-	end
-	return HookSetTradeTargetItem(self, index)
-end
-
-local sets = {
-	["SpiritofEskhandar"]=true,
-	["HakkariBlades"]=true,
-	["PrimalBlessing"]=true,
-	["ShardOfGods"]=true,
-	["DalRend"]=true,
-	["SpiderKiss"]=true,
-	["UnobMounts"]=true,
-	["Legendaries"]=true,
-	["Artifacts"]=true,
-	["ZGRings"]=true,
-	["Tabards"]=true,
+local WrappingLines = {
+	["^Set:"] = gsub("^"..ITEM_SET_BONUS, "%%s", ""),
+	["^%(%d%) Set:"] = gsub(gsub(ITEM_SET_BONUS_GRAY, "%(%%d%)", "^%%(%%d%%)"), "%%s", ""),
+	["^Effect:"] = gsub("^"..ITEM_SPELL_EFFECT, "%%s", ""),
+	["^Equip:"] = "^"..ITEM_SPELL_TRIGGER_ONEQUIP,
+	["^Chance on hit:"] = "^"..ITEM_SPELL_TRIGGER_ONPROC,
+	["^Use:"] = "^"..ITEM_SPELL_TRIGGER_ONUSE,
+	["^\nRequires"] = "^\n"..gsub(ITEM_REQ_SKILL, "%%s", "")
 }
 
-local function SetContains(set, key)
-	if not set or not key then
-		return false
-	end
-	return set[key] ~= nil
+local lines = {}
+for i = 1, 30 do
+	lines[i] = {}
 end
 
-local lastItemID, lastSourceStr, lastDropRate
-function AtlasLootTip.extendTooltip(tooltip)
-	if AtlasLootCharDB.ShowSource ~= true or IsShiftKeyDown() then
+local function AddSourceLine(tooltip, sourceStr)
+	local name = tooltip:GetName()
+	local numLines = tooltip:NumLines()
+	local left, right
+	local leftText, rightText
+	local leftR, leftG, leftB
+	local rightR, rightG, rightB
+	local wrap
+
+	for i in pairs(lines) do
+		for j in pairs(lines[i]) do
+			lines[i][j] = nil
+		end
+	end
+
+	for i = 1, numLines do
+		left = _G[name .. "TextLeft" .. i]
+		right = _G[name .. "TextRight" .. i]
+		leftText = left:GetText()
+		rightText = right:IsShown() and right:GetText()
+		leftR, leftG, leftB = left:GetTextColor()
+		rightR, rightG, rightB = right:GetTextColor()
+		lines[i][1] = leftText
+		lines[i][2] = rightText
+		lines[i][3] = leftR
+		lines[i][4] = leftG
+		lines[i][5] = leftB
+		lines[i][6] = rightR
+		lines[i][7] = rightG
+		lines[i][8] = rightB
+	end
+
+	if not lines[1][1] then
 		return
 	end
-	local strfind = string.find
-	local pairs = pairs
-	local tooltipName = tooltip:GetName()
-	local originalTooltip = {}
-    local itemName = getglobal(tooltipName .. "TextLeft1"):GetText()
-	local line2 = getglobal(tooltipName .. "TextLeft2")
-	local craftSpell, source, sourceStr, dropRate
-	local isCraft, isWBLoot, isPvP, isRepReward, isSetPiece, isWorldEvent = false, false, false, false, false, false
-	local itemID = tonumber(tooltip.itemID)
-	if itemName and itemName ~= "Fashion Coin" and itemID then
-		if itemID ~= lastItemID then
-			for row = 1, 30 do
-				local tooltipRowLeft = getglobal(tooltipName .. 'TextLeft' .. row)
-				if tooltipRowLeft then
-					local rowtext = tooltipRowLeft:GetText()
-					if rowtext then
-						originalTooltip[row] = {}
-						originalTooltip[row].text = rowtext
-					end
-				end
-			end
-			for row=1, table.getn(originalTooltip) do
-				if strfind(originalTooltip[row].text, "—",1,true) then -- skip items that state which rep they require
-					return
-				end
-			end
-			-- first check if its craftable item
-			for k,v in pairs(GetSpellInfoAtlasLootDB["craftspells"]) do
-				if v["craftItem"] == itemID then
-					craftSpell = "s"..tostring(k)
-					break
-				end
-			end
-			for k, v in pairs(GetSpellInfoAtlasLootDB["enchants"]) do
-				if v["item"] and v["item"] == itemID then
-					craftSpell = "e"..tostring(k)
-					break
-				end
-			end
-			for k1, v1 in pairs(AtlasLoot_Data["AtlasLootCrafting"]) do
-				if source then
-					break
-				end
-				for k2, v2 in pairs(AtlasLoot_Data["AtlasLootCrafting"][k1]) do
-					if v2[1] ~= 0 and v2[1] ~= "" --[[and string.sub(v2[1], 1, 1) ~= "e"]] then
-						if (v2[1] == craftSpell or v2[1] == itemID) and
-							(strfind(k1, "Apprentice", 1, true) or
-								strfind(k1, "Journeyman", 1, true) or
-								strfind(k1, "Expert", 1, true) or
-								strfind(k1, "Artisan", 1, true) or
-								strfind(k1, "Goblin", 1, true) or
-								strfind(k1, "Gnomish", 1, true) or
-								strfind(k1, "Survival", 1, true) or
-								strfind(k1, "Herbalism", 1, true) or
-								strfind(k1, "FirstAid", 1, true) or
-								strfind(k1, "Poisons", 1, true) or
-								strfind(k1, "Mining", 1, true) or
-								strfind(k1, "Smelting", 1, true) or
-								strfind(k1, "Elemental", 1, true) or
-								strfind(k1, "Tribal", 1, true) or
-								strfind(k1, "Dragonscale", 1, true) or
-								strfind(k1, "Weaponsmith", 1, true) or
-								strfind(k1, "Axesmith", 1, true) or
-								strfind(k1, "Hammersmith", 1, true) or
-								strfind(k1, "Swordsmith", 1, true) or
-								strfind(k1, "Armorsmith", 1, true) or
-								strfind(k1, "Gemology", 1, true) or
-								strfind(k1, "Goldsmithing", 1, true))
-						then
-							source = k1
-							isCraft = true
-							lastDropRate = nil
-							-- if strfind(k1, "Apprentice", 1, true) then
-							-- 	dropRate = "1-75"
-							-- 	lastDropRate = dropRate
-							-- elseif strfind(k1, "Journeyman", 1, true) then
-							-- 	dropRate = "75-150"
-							-- 	lastDropRate = dropRate
-							-- elseif strfind(k1, "Expert", 1, true) then
-							-- 	dropRate = "150-225"
-							-- 	lastDropRate = dropRate
-							-- elseif strfind(k1, "Artisan", 1, true) then
-							-- 	dropRate = "225-300"
-							-- 	lastDropRate = dropRate
-							-- end
-							break
-						end
-					end
-				end
-			end
-			-- check if its world boss loot
-			if not isCraft then
-                for k1,v1 in pairs(AtlasLoot_Data["AtlasLootWBItems"]) do
-					if source then
-						break
-					end
-					for k2,v2 in pairs(AtlasLoot_Data["AtlasLootWBItems"][k1]) do
-						if v2[1] == itemID then
-							source = k1
-							isWBLoot = true
-                            if v2[5] and v2[5] ~= "" then
-                                dropRate = v2[5]
-                                lastDropRate = dropRate
-                            else
-                                lastDropRate = nil
-                            end
-							break
-						end
-					end
-				end
-			end
-            -- check if its a pvp reward
-            if not isCraft and not isWBLoot then
-                for k1,v1 in pairs(AtlasLoot_Data["AtlasLootGeneralPvPItems"]) do
-					if source then
-						break
-					end
-					for k2,v2 in pairs(AtlasLoot_Data["AtlasLootGeneralPvPItems"][k1]) do
-						if v2[1] == itemID then
-							source = k1
-							isPvP = true
-                            lastDropRate = nil
-							break
-						end
-					end
-				end
-            end
-            -- check if its a rep reward
-			-- bgs
-            if not isCraft and not isWBLoot and not isPvP then
-                for k1,v1 in pairs(AtlasLoot_Data["AtlasLootBGItems"]) do
-					if source then
-						break
-					end
-					for k2,v2 in pairs(AtlasLoot_Data["AtlasLootBGItems"][k1]) do
-						if v2[1] == itemID then
-							source = k1
-							isRepReward = true
-							if v2[5] and v2[5] ~= "" then
-								dropRate = v2[5]
-								lastDropRate = dropRate
-							else
-								lastDropRate = nil
-							end
-							break
-						end
-					end
-				end
-				-- factions
-                for k1,v1 in pairs(AtlasLoot_Data["AtlasLootRepItems"]) do
-					if source then
-						break
-					end
-					for k2,v2 in pairs(AtlasLoot_Data["AtlasLootRepItems"][k1]) do
-						if v2[1] == itemID then
-							source = k1
-							isRepReward = true
-							if v2[5] and v2[5] ~= "" --[[and source ~= "Darkmoon" and not strfind(source, "Cenarion",1,true)]] then
-								dropRate = v2[5]
-								lastDropRate = dropRate
-							else
-								lastDropRate = nil
-							end
-							break
-						end
-					end
-				end
-            end
-            -- check if its a set piece
-			if not isCraft and not isWBLoot and not isPvP and not isRepReward then
-				for k1,v1 in pairs(AtlasLoot_Data["AtlasLootSetItems"]) do
-					if source then
-						break
-					end
-					for k2,v2 in pairs(AtlasLoot_Data["AtlasLootSetItems"][k1]) do
-						if v2[1] == itemID then
-							source = k1
-							isSetPiece = true
-							if (SetContains(sets, source) or strfind(source, "WorldEpics",1,true)) then
-								source = nil
-								isSetPiece = false
-							end
-							lastDropRate = nil
-							break
-						end
-					end
-				end
-			end
-			-- check world events
-			if not isCraft and not isWBLoot and not isPvP and not isRepReward and not isSetPiece then
-				for k1,v1 in pairs(AtlasLoot_Data["AtlasLootWorldEvents"]) do
-					if source then
-						break
-					end
-					for k2,v2 in pairs(AtlasLoot_Data["AtlasLootWorldEvents"][k1]) do
-						if v2[1] == itemID then
-							source = k1
-							isWorldEvent = true
-							if v2[5] and v2[5] ~= "" then
-								dropRate = v2[5]
-								lastDropRate = dropRate
-							else
-								lastDropRate = nil
-							end
-							break
-						end
-					end
-				end
-			end
-            -- check if its a dungeon/raid loot
-			if not isCraft and not isWBLoot and not isPvP and not isRepReward and not isWorldEvent and not isSetPiece then
-				for k1,v1 in pairs(AtlasLoot_Data["AtlasLootItems"]) do
-					if source then
-						break
-					end
-					for k2,v2 in pairs(AtlasLoot_Data["AtlasLootItems"][k1]) do
-						if v2[1] == itemID then
-							if k1 ~= "VanillaKeys" then
-								source = k1
-							end
-							if v2[5] and v2[5] ~= "" then
-								dropRate = v2[5]
-								lastDropRate = dropRate
-							else
-								lastDropRate = nil
-							end
-							break
-						end
-					end
-				end
-				-- check containers
-				for k1,v1 in pairs(AtlasLoot_Data["AtlasLootItems"]) do
-					if source then
-						break
-					end
-					for k2,v2 in pairs(AtlasLoot_Data["AtlasLootItems"][k1]) do
-						if source then
-							break
-						end
-						if v2[16] then
-							for i, n in pairs(v2[16]) do
-								if source then
-									break
-								end
-								for i2, n2 in pairs(v2[16][i]) do
-									if v2[16][i][i2][1] == itemID then
-										source = k1
-										break
-									end
-								end
-							end
-						end
-					end
-				end
-			end
-			lastItemID = itemID
-			if not source then
-				lastSourceStr = nil
-                return
-			end
-			for k,v in pairs(AtlasLoot_TableNames) do
-				if k == source then
-					sourceStr = AtlasLoot_TableNames[k][1]
-					lastSourceStr = sourceStr
-					break
-				end
-			end
-			
-			if not sourceStr then
-				return
-			end
 
-			if line2 and line2:GetText() then
-				if dropRate then
-					line2:SetText(GREY..sourceStr.." ("..dropRate..")|r\n"..line2:GetText())
-				else
-					line2:SetText(GREY..sourceStr.."|r\n"..line2:GetText())
-				end
+	tooltip:SetText(lines[1][1], lines[1][3], lines[1][4], lines[1][5], 1, false)
+
+	if numLines < 28 then
+		tooltip:AddLine(sourceStr)
+	elseif lines[2][1] then
+		lines[2][1] = sourceStr .. "\n" .. lines[2][1]
+	end
+
+	for i = 2, getn(lines) do
+		if lines[i][2] then
+			tooltip:AddDoubleLine(lines[i][1], lines[i][2], lines[i][3], lines[i][4], lines[i][5], lines[i][6], lines[i][7], lines[i][8])
+		else
+			wrap = false
+			if strsub(lines[i][1] or "", 1, 1) == "\"" then
+				wrap = true
 			else
-				if dropRate then
-					tooltip:AddLine(GREY..sourceStr.." ("..dropRate..")|r")
-				else
-					tooltip:AddLine(GREY..sourceStr.."|r")
+				for _, pattern in pairs(WrappingLines) do
+					if strfind(lines[i][1] or "", pattern) then
+						wrap = true
+						break
+					end
 				end
 			end
-		elseif itemID == lastItemID then
-			if lastSourceStr then
-				if line2:GetText() then
-					if lastDropRate then
-						line2:SetText(GREY..lastSourceStr.." ("..lastDropRate..")|r\n"..line2:GetText())
-					else
-						line2:SetText(GREY..lastSourceStr.."|r\n"..line2:GetText())
-					end
-				else
-					if lastDropRate then
-						tooltip:AddLine(GREY..lastSourceStr.." ("..lastDropRate..")|r")
-					else
-						tooltip:AddLine(GREY..lastSourceStr.."|r")
-					end
+			tooltip:AddLine(lines[i][1], lines[i][3], lines[i][4], lines[i][5], wrap)
+		end
+	end
+end
+
+local lastItemID, lastSourceStr
+local function ExtendTooltip(tooltip)
+	if AtlasLootCharDB.ShowSource then
+		local itemID = tonumber(tooltip.itemID)
+		if itemID and itemID ~= 51217 then -- 51217 Fashion Coin
+			if itemID ~= lastItemID then
+				lastItemID = itemID
+				lastSourceStr = nil
+				local source = AtlasLoot_Data["AtlasLootSources"][itemID]
+				if source then
+					local str = GREY .. source .. "|r"
+					lastSourceStr = str
 				end
+			end
+			if lastSourceStr then
+				AddSourceLine(tooltip, lastSourceStr)
+				tooltip:Show()
 			end
 		end
 	end
-	tooltip:Show()
+	if tooltipMoney > 0 then
+		original_SetTooltipMoney(tooltip, tooltipMoney)
+		tooltip:Show()
+	end
 end
 
-AtlasLootTip:SetScript("OnHide", function()
-	GameTooltip.itemID = nil
-	ItemRefTooltip.itemID = nil
-end)
+local IDCache = {}
+
+local function GetItemIDByName(name)
+	if not name then return nil end
+	if IDCache[name] then return IDCache[name] ~= 0 and IDCache[name] or nil end
+	for itemID = 1, 99999 do
+		if GetItemInfo(itemID) == name then
+			IDCache[name] = itemID
+			return itemID
+		end
+	end
+	IDCache[name] = 0
+	return nil
+end
+
+local function IDFromLink(link)
+	if not link then return nil end
+	local _, _, id = strfind(link, "item:(%d+)")
+	return tonumber(id)
+end
+
+local function HookTooltip(tooltip)
+	local original_SetLootRollItem = tooltip.SetLootRollItem
+	local original_SetLootItem = tooltip.SetLootItem
+	local original_SetMerchantItem = tooltip.SetMerchantItem
+	local original_SetQuestLogItem = tooltip.SetQuestLogItem
+	local original_SetQuestItem = tooltip.SetQuestItem
+	local original_SetHyperlink = tooltip.SetHyperlink
+	local original_SetBagItem = tooltip.SetBagItem
+	local original_SetInboxItem = tooltip.SetInboxItem
+	local original_SetInventoryItem = tooltip.SetInventoryItem
+	local original_SetCraftItem = tooltip.SetCraftItem
+	local original_SetCraftSpell = tooltip.SetCraftSpell
+	local original_SetTradeSkillItem = tooltip.SetTradeSkillItem
+	local original_SetAuctionItem = tooltip.SetAuctionItem
+	local original_SetAuctionSellItem = tooltip.SetAuctionSellItem
+	local original_SetTradePlayerItem = tooltip.SetTradePlayerItem
+	local original_SetTradeTargetItem = tooltip.SetTradeTargetItem
+
+	local original_OnHide = tooltip:GetScript("OnHide")
+
+	tooltip:SetScript("OnHide", function()
+		if original_OnHide then original_OnHide() end
+		this.itemID = nil
+		tooltipMoney = 0
+	end)
+
+	function tooltip.SetLootRollItem(self, rollID)
+		insideHook = true
+		original_SetLootRollItem(self, rollID)
+		insideHook = false
+		self.itemID = IDFromLink(GetLootRollItemLink(rollID))
+		ExtendTooltip(self)
+	end
+
+	function tooltip.SetLootItem(self, slot)
+		insideHook = true
+		original_SetLootItem(self, slot)
+		insideHook = false
+		self.itemID = IDFromLink(GetLootSlotLink(slot))
+		ExtendTooltip(self)
+	end
+
+	function tooltip.SetMerchantItem(self, merchantIndex)
+		insideHook = true
+		original_SetMerchantItem(self, merchantIndex)
+		insideHook = false
+		self.itemID = IDFromLink(GetMerchantItemLink(merchantIndex))
+		ExtendTooltip(self)
+	end
+
+	function tooltip.SetQuestLogItem(self, itemType, index)
+		insideHook = true
+		original_SetQuestLogItem(self, itemType, index)
+		insideHook = false
+		self.itemID = IDFromLink(GetQuestLogItemLink(itemType, index))
+		ExtendTooltip(self)
+	end
+
+	function tooltip.SetQuestItem(self, itemType, index)
+		insideHook = true
+		original_SetQuestItem(self, itemType, index)
+		insideHook = false
+		self.itemID = IDFromLink(GetQuestItemLink(itemType, index))
+		ExtendTooltip(self)
+	end
+
+	function tooltip.SetHyperlink(self, arg1)
+		insideHook = true
+		original_SetHyperlink(self, arg1)
+		insideHook = false
+		self.itemID = IDFromLink(arg1)
+		ExtendTooltip(self)
+	end
+
+	function tooltip.SetBagItem(self, container, slot)
+		insideHook = true
+		local hasCooldown, repairCost = original_SetBagItem(self, container, slot)
+		insideHook = false
+		self.itemID = IDFromLink(GetContainerItemLink(container, slot))
+		ExtendTooltip(self)
+		return hasCooldown, repairCost
+	end
+
+	function tooltip.SetInboxItem(self, mailID, attachmentIndex)
+		insideHook = true
+		original_SetInboxItem(self, mailID, attachmentIndex)
+		insideHook = false
+		self.itemID = GetItemIDByName(GetInboxItem(mailID))
+		ExtendTooltip(self)
+	end
+
+	function tooltip.SetInventoryItem(self, unit, slot)
+		insideHook = true
+		local hasItem, hasCooldown, repairCost = original_SetInventoryItem(self, unit, slot)
+		insideHook = false
+		self.itemID = IDFromLink(GetInventoryItemLink(unit, slot))
+		ExtendTooltip(self)
+		return hasItem, hasCooldown, repairCost
+	end
+
+	function tooltip.SetCraftItem(self, skill, slot)
+		insideHook = true
+		original_SetCraftItem(self, skill, slot)
+		insideHook = false
+		self.itemID = IDFromLink(GetCraftReagentItemLink(skill, slot))
+		ExtendTooltip(self)
+	end
+
+	function tooltip.SetCraftSpell(self, slot)
+		insideHook = true
+		original_SetCraftSpell(self, slot)
+		insideHook = false
+		self.itemID = IDFromLink(GetCraftItemLink(slot))
+		ExtendTooltip(self)
+	end
+
+	function tooltip.SetTradeSkillItem(self, skillIndex, reagentIndex)
+		insideHook = true
+		original_SetTradeSkillItem(self, skillIndex, reagentIndex)
+		insideHook = false
+		if reagentIndex then
+			self.itemID = IDFromLink(GetTradeSkillReagentItemLink(skillIndex, reagentIndex))
+		else
+			self.itemID = IDFromLink(GetTradeSkillItemLink(skillIndex))
+		end
+		ExtendTooltip(self)
+	end
+
+	function tooltip.SetAuctionItem(self, atype, index)
+		insideHook = true
+		original_SetAuctionItem(self, atype, index)
+		insideHook = false
+		self.itemID = IDFromLink(GetAuctionItemLink(atype, index))
+		ExtendTooltip(self)
+	end
+
+	function tooltip.SetAuctionSellItem(self)
+		insideHook = true
+		original_SetAuctionSellItem(self)
+		insideHook = false
+		self.itemID = tonumber(GetItemIDByName(GetAuctionSellItemInfo()))
+		ExtendTooltip(self)
+	end
+
+	function tooltip.SetTradePlayerItem(self, index)
+		insideHook = true
+		original_SetTradePlayerItem(self, index)
+		insideHook = false
+		self.itemID = IDFromLink(GetTradePlayerItemLink(index))
+		ExtendTooltip(self)
+	end
+
+	function tooltip.SetTradeTargetItem(self, index)
+		insideHook = true
+		original_SetTradeTargetItem(self, index)
+		insideHook = false
+		self.itemID = IDFromLink(GetTradeTargetItemLink(index))
+		ExtendTooltip(self)
+	end
+end
 
 AtlasLootTip:SetScript("OnShow", function()
-	if aux_frame and aux_frame:IsVisible() then
-        if GetMouseFocus():GetParent() then
-            if GetMouseFocus():GetParent().row then
-                if GetMouseFocus():GetParent().row.record.item_id then
-                    GameTooltip.itemID = GetMouseFocus():GetParent().row.record.item_id
-                end
-            end
-        end
-    end
-	AtlasLootTip.extendTooltip(GameTooltip)
+	if not (aux_frame and aux_frame:IsShown()) then return end
+	local focus = GetMouseFocus()
+	if not focus then return end
+	local parent = focus:GetParent()
+	if not (parent and parent.row and parent.row.record) then return end
+	GameTooltip.itemID = tonumber(parent.row.record.item_id)
+	ExtendTooltip(GameTooltip)
 end)
 
 -- adapted from http://shagu.org/ShaguTweaks/
 AtlasLootTip.HookAddonOrVariable = function(addon, func)
-    local lurker = CreateFrame("Frame", nil)
-    lurker.func = func
-    lurker:RegisterEvent("ADDON_LOADED")
-    lurker:RegisterEvent("VARIABLES_LOADED")
-    lurker:RegisterEvent("PLAYER_ENTERING_WORLD")
-    lurker:SetScript("OnEvent",function()
-		if IsAddOnLoaded(addon) or getglobal(addon) then
+	local lurker = CreateFrame("Frame", nil)
+	lurker.func = func
+	lurker:RegisterEvent("ADDON_LOADED")
+	lurker:RegisterEvent("VARIABLES_LOADED")
+	lurker:RegisterEvent("PLAYER_ENTERING_WORLD")
+	lurker:SetScript("OnEvent", function()
+		if IsAddOnLoaded(addon) or _G[addon] then
 			this:func()
 			this:UnregisterAllEvents()
 		end
-    end)
+	end)
 end
 
 AtlasLootTip.HookAddonOrVariable("Tmog", function()
-    local tmog = CreateFrame("Frame", nil, TmogTooltip)
-    tmog:SetScript("OnShow", function()
-        AtlasLootTip.extendTooltip(TmogTooltip)
-    end)
+	HookTooltip(TmogTooltip)
 end)
+
+HookTooltip(GameTooltip)
+HookTooltip(ItemRefTooltip)
